@@ -27,6 +27,6 @@ gcc client.c -o client -pthread
 ```
 
 ## Parametreler
-- **Bireysel Mesaj**: -p <ID> <Message> şeklinde, belirli bir kullanıcıya mesaj gönderebilirsiniz.
+- **Bireysel Mesaj**: -p 'ID' 'Message' şeklinde, belirli bir kullanıcıya mesaj gönderebilirsiniz.
 
 
