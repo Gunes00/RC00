@@ -1,86 +1,89 @@
+// client.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 
-#define SERVER_IP "127.0.0.1"
-#define PORT 8080
-#define BUFFER_SIZE 1024
+#define PORT 12345
 
-int sockfd;
-struct sockaddr_in server_addr;
-char buffer[BUFFER_SIZE];
+int socket_desc;
 
-void send_message(const char *target_id, const char *message) {
-    if (target_id) {
-        snprintf(buffer, sizeof(buffer), "%s %s", target_id, message);
-    } else {
-        snprintf(buffer, sizeof(buffer), "%s", message);
-    }
-    
-    write(sockfd, buffer, strlen(buffer));
-}
-
-void *receive_messages(void *arg) {
-    char received_msg[BUFFER_SIZE];
-    while (1) {
-        memset(received_msg, 0, sizeof(received_msg));
-        int bytes_received = read(sockfd, received_msg, sizeof(received_msg) - 1);
-        if (bytes_received <= 0) {
-            printf("Server disconnected.\n");
-            break;
-        }
-        received_msg[bytes_received] = '\0';
-        printf("%s\n", received_msg);
-    }
-    return NULL;
-}
+void *receive_message(void *socket_desc);
+void send_message(char *nickname);
 
 int main(int argc, char *argv[]) {
-    char *target_id = NULL;
-    if (argc == 3 && strcmp(argv[1], "-p") == 0) {
-        target_id = argv[2];
+    struct sockaddr_in server_addr;
+    pthread_t recv_thread;
+
+    if (argc != 2) {
+        printf("Kullanım: ./client <nickname>\n");
+        return -1;
     }
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
+    char *nickname = argv[1];
+
+    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_desc == -1) {
+        perror("Socket oluşturulamadı");
+        return -1;
     }
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Connection failed");
-        close(sockfd);
-        exit(EXIT_FAILURE);
+    if (connect(socket_desc, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Sunucuya bağlanılamadı");
+        return -1;
     }
 
-    memset(buffer, 0, sizeof(buffer));
-    read(sockfd, buffer, sizeof(buffer));
-    printf("%s", buffer);
+    printf("Sunucuya bağlanıldı. %s ile sohbet edebilirsiniz.\n", nickname);
 
-    pthread_t receiver_thread;
-    pthread_create(&receiver_thread, NULL, receive_messages, NULL);
+    pthread_create(&recv_thread, NULL, receive_message, (void *)&socket_desc);
 
     while (1) {
-        char message[BUFFER_SIZE];
-        
-        if (target_id) {
-            printf("Send message to ID %s: ", target_id);
-        } else {
-            printf("Global chat: ");
-        }
-
-        fgets(message, sizeof(message), stdin);
-        sscanf(message, "%[^\n]", message);
-
-        send_message(target_id, message);
+        send_message(nickname);
     }
 
-    close(sockfd);
+    close(socket_desc);
     return 0;
+}
+
+void *receive_message(void *socket_desc) {
+    int socket = *(int *)socket_desc;
+    char buffer[1024];
+
+    while (1) {
+        int read_size = recv(socket, buffer, sizeof(buffer), 0);
+        if (read_size > 0) {
+            buffer[read_size] = '\0';
+            printf("%s\n", buffer);
+        } else if (read_size == 0) {
+            printf("Bağlantı kapatıldı.\n");
+            break;
+        } else {
+            perror("Mesaj alınamadı");
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+void send_message(char *nickname) {
+    char message[1024];
+
+    //printf("[%s]: ", nickname);
+    fgets(message, sizeof(message), stdin);
+    message[strlen(message) - 1] = '\0';
+
+    char full_message[1048];
+    snprintf(full_message, sizeof(full_message), "[%s]: %s", nickname, message);
+
+    if (send(socket_desc, full_message, strlen(full_message), 0) == -1) {
+        perror("Mesaj gönderilemedi");
+    }
 }
