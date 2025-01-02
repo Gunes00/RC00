@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
-#define PORT 4444
+#define PORT 12345
 
 int socket_desc;
 
