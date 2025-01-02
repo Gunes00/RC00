@@ -24,11 +24,9 @@ gcc server.c -o server -pthread
 ```bash
 gcc client.c -o client -pthread
 ./client
-./client -p 2
 ```
 
 ## Parametreler
-- **Global Sohbet**: ./client
-- **Bireysel Mesaj**: ./client -p <ID> şeklinde, belirli bir kullanıcıya mesaj gönderebilirsiniz.
+- **Bireysel Mesaj**: -p <ID> <Message> şeklinde, belirli bir kullanıcıya mesaj gönderebilirsiniz.
 
 
