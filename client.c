@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr("45.87.173.173");
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (connect(socket_desc, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Sunucuya bağlanılamadı");

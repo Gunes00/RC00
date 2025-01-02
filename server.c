@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
-#define PORT 4444
+#define PORT 12345
 #define MAX_CLIENTS 10
 
 int client_sockets[MAX_CLIENTS];
