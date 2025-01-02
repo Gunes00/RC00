@@ -14,15 +14,23 @@ Bu proje, istemcilerin birbirleriyle mesajlaşabileceği basit bir **chat uygula
 
 ## Kullanım
 
+### Kurulum
+```bash
+make all
+```
+
 ### Sunucu Çalıştırma
 ```bash
-gcc server.c -o server -pthread
 ./server
 ```
+
 ### İstemci Çalıştırma
 ```bash
-gcc client.c -o client -pthread
 ./client 'Nickname'
 ```
 
+### Kaldırmak İçin
+```bash
+make clean
+```
 
