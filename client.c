@@ -74,7 +74,6 @@ void *receive_message(void *socket_desc) {
 void send_message(char *nickname) {
     char message[1024];
 
-    //printf("[%s]: ", nickname);
     fgets(message, sizeof(message), stdin);
     message[strlen(message) - 1] = '\0';
 
